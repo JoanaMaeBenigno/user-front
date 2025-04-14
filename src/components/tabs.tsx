@@ -1,9 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
-export default function tabs() {
+export default function Tabs() {
   const router = useRouter()
 
   function goToEndpoint(endpoint: string) {
