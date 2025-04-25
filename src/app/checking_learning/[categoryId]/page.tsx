@@ -3,8 +3,23 @@
 import { useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 
-// Dummy data for questions
-const questions = [
+// Define the types for the questions and answers
+type Question = {
+  id: string
+  question: string
+  choices: string[]
+  correctAnswer: string
+}
+
+type Answers = {
+  [key: string]: string // Maps question ID to selected answer
+}
+
+type Category = {
+  name: string | string[] | undefined
+}
+
+const questions: Question[] = [
   {
     id: "q1",
     question: "What is the capital of France?",
@@ -28,31 +43,35 @@ const questions = [
 const categoryDescription = "This category tests your general knowledge on a variety of topics."
 
 export default function CategoryPage() {
-  const { id } = useParams()
-  const [answers, setAnswers] = useState<{ [key: string]: string }>({})
-  const [showModal, setShowModal] = useState(false)
-  const [selectedCategory, setSelectedCategory] = useState<any>(null)
+  const { id } = useParams() // Get the category id from the URL params
+  const [answers, setAnswers] = useState<Answers>({}) // Store the selected answers
+  const [showModal, setShowModal] = useState<boolean>(false) // Track if the modal is open
+  const [selectedCategory, setSelectedCategory] = useState<Category | undefined | null>(null) // Selected category details
   const router = useRouter()
 
+  // Handle the selection of a choice for a specific question
   const handleChange = (questionId: string, selected: string) => {
     setAnswers((prev) => ({ ...prev, [questionId]: selected }))
   }
 
+  // Triggered when the user clicks the submit button
   const handleSubmit = () => {
-    setSelectedCategory({ name: id }) // Dummy selected category
-    setShowModal(true)
+    setSelectedCategory({ name: id }) // Set the selected category based on the URL
+    setShowModal(true) // Show the confirmation modal
   }
 
+  // Handle confirmation after submitting the quiz
   const handleConfirm = () => {
-    console.log("Submitted Answers:", answers)
-    setShowModal(false)
-    alert("Answers submitted! (Check console log)")
-    // You can route to another page or handle post-submission behavior
-    router.push("/checking_learning/results/some_id") // Example endpoint
+    console.log("Submitted Answers:", answers) // Log the answers (for now)
+    setShowModal(false) // Close the modal
+    alert("Answers submitted! (Check console log)") // Show a confirmation alert
+    // After confirmation, navigate to the results page
+    router.push(`/checking_learning/results/${id}`)
   }
 
+  // Handle cancellation of submission
   const handleCancel = () => {
-    setShowModal(false)
+    setShowModal(false) // Close the modal without submitting
   }
 
   return (
@@ -94,7 +113,7 @@ export default function CategoryPage() {
         </div>
       </form>
 
-      {/* Modal */}
+      {/* Modal for confirmation */}
       {showModal && selectedCategory && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white p-8 rounded-lg shadow-lg text-center max-w-sm w-full">
