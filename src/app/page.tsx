@@ -47,6 +47,7 @@ export default function Home() {
         <div className="grid md:grid-cols-3 gap-6">
           {articles.map((story) => (
             <StoryCard
+              route="article/test"
               key={story.uuid}
               title={story.title}
               subtitle={story.subtitle}

@@ -39,7 +39,7 @@ export default function ResultsPage() {
         </p>
 
         <p className="text-lg text-gray-600 mb-6">
-          You're higher than <span className="font-bold text-blue-600">85%</span> of people for this category as of{" "}
+          You&apos;re higher than <span className="font-bold text-blue-600">85%</span> of people for this category as of{" "}
           <span className="font-semibold">{date}</span>.
         </p>
 
