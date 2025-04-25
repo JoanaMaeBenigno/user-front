@@ -1,39 +1,125 @@
+"use client"
+
+import { useEffect, useRef, useReducer } from "react"
 import HeroBanner from "@/components/heroBanner"
 import StoryCard from "@/components/storyCard"
+import { fetchArticles, Article } from "@/services/articleService"
+import { usePathname } from "next/navigation"
 
-export default function home() {
-  const featuredStories = [
-    {
-      title: "Penguins in Peril",
-      subtitle: "Massacre in a protected reserve raises alarm",
-      image: "/images/penguin-thumb.jpg",
-    },
-    {
-      title: "Vanishing Glaciers",
-      subtitle: "What melting ice means for the planet",
-      image: "/images/glacier-thumb.jpg",
-    },
-    {
-      title: "Amazon at Risk",
-      subtitle: "How illegal logging devastates ecosystems",
-      image: "/images/amazon-thumb.jpg",
-    },
-  ]
+// Types for reducer state and actions
+type State = {
+  articles: Article[]
+  page: number
+  loading: boolean
+  hasMore: boolean
+}
+
+type Action =
+  | { type: "LOAD_START" }
+  | { type: "LOAD_SUCCESS"; payload: Article[] }
+  | { type: "INCREMENT_PAGE" }
+  | { type: "RESET" }
+
+// Initial reducer state
+const initialState: State = {
+  articles: [],
+  page: 1,
+  loading: false,
+  hasMore: true,
+}
+
+// Reducer function
+function reducer(state: State, action: Action): State {
+  switch (action.type) {
+    case "LOAD_START":
+      return { ...state, loading: true }
+    case "LOAD_SUCCESS":
+      const newUniqueArticles = action.payload.filter(
+        (newArticle) => !state.articles.some((existing) => existing.uuid === newArticle.uuid)
+      )
+      return {
+        ...state,
+        articles: [...state.articles, ...newUniqueArticles],
+        loading: false,
+        hasMore: newUniqueArticles.length > 0,
+      }
+    case "INCREMENT_PAGE":
+      return { ...state, page: state.page + 1 }
+    case "RESET":
+      return initialState
+    default:
+      return state
+  }
+}
+
+export default function Home() {
+  const [state, dispatch] = useReducer(reducer, initialState)
+  const { articles, page, loading, hasMore } = state
+  const loaderRef = useRef<HTMLDivElement>(null)
+  const pathname = usePathname()
+
+  const loadMoreArticles = async (pageNum: number) => {
+    dispatch({ type: "LOAD_START" })
+    const newArticles = await fetchArticles(pageNum, 20)
+    dispatch({ type: "LOAD_SUCCESS", payload: newArticles })
+  }
+
+  useEffect(() => {
+    loadMoreArticles(page)
+  }, [page])
+
+  useEffect(() => {
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting && !loading && hasMore) {
+        dispatch({ type: "INCREMENT_PAGE" })
+      }
+    })
+
+    const currentLoader = loaderRef.current
+    if (currentLoader) observer.observe(currentLoader)
+
+    return () => {
+      if (currentLoader) observer.unobserve(currentLoader)
+    }
+  }, [loading, hasMore])
+
+  useEffect(() => {
+    dispatch({ type: "RESET" })
+    console.log("RESET")
+  }, [pathname])
+
+  useEffect(() => {
+    console.log("Fetched Articles:", articles)
+  }, [articles])
+
+  const heroStory = articles[0]
 
   return (
     <div className="font-serif text-gray-900">
-      <HeroBanner
-        title="Explore the Wild. Protect the Future."
-        image="/images/hero-banner.jpg"
-        description="Your window into the natural world — science, wildlife, exploration."
-      />
+      {heroStory && (
+        <HeroBanner
+          title={heroStory.title}
+          image="/article_hero.jpg"
+          description={heroStory.subtitle}
+        />
+      )}
 
       <section className="max-w-6xl mx-auto px-4 py-12">
         <h2 className="text-3xl font-bold mb-6">Featured Stories</h2>
         <div className="grid md:grid-cols-3 gap-6">
-          {featuredStories.map((story, idx) => (
-            <StoryCard key={idx} {...story} />
+          {articles.slice(1).map((story) => (
+            <StoryCard
+              key={story.uuid}
+              title={story.title}
+              subtitle={story.subtitle}
+              image={story.thumbnail_image}
+            />
           ))}
+        </div>
+
+        <div ref={loaderRef} className="h-16 flex items-center justify-center">
+          {loading && <p>Loading more...</p>}
+          {!hasMore && <p>No more stories to load.</p>}
         </div>
       </section>
     </div>
