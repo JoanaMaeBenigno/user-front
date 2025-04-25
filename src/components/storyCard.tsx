@@ -1,12 +1,26 @@
+"use client"
+
+import { useRouter } from "next/navigation";
+
 type StoryCardProps = {
   title: string;
   subtitle: string;
   image: string;
+  route: string;
 };
 
-export default function StoryCard({ title, subtitle, image }: StoryCardProps) {
+export default function StoryCard({ title, subtitle, image, route }: StoryCardProps) {
+  const router = useRouter();
+
+  const handleCardClick = () => {
+    router.push(route); // Navigate to the dynamic route using the slug
+  };
+
   return (
-    <div className="bg-white shadow-md rounded-lg overflow-hidden">
+    <div
+      onClick={handleCardClick}
+      className="bg-white shadow-md rounded-lg overflow-hidden cursor-pointer"
+    >
       <img src={image} alt={title} className="w-full h-48 object-cover" />
       <div className="p-4">
         <h3 className="text-lg font-bold">{title}</h3>

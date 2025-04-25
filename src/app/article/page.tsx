@@ -56,41 +56,41 @@ export default function Articles() {
     const { articles, page, loading, hasMore } = state
     const loaderRef = useRef<HTMLDivElement>(null)
     const pathname = usePathname()
-  
+
     const loadMoreArticles = async (pageNum: number) => {
       dispatch({ type: "LOAD_START" })
       const newArticles = await fetchArticles(pageNum, 20)
       dispatch({ type: "LOAD_SUCCESS", payload: newArticles })
     }
-  
+
     useEffect(() => {
       loadMoreArticles(page)
     }, [page])
-  
+
     useEffect(() => {
       const observer = new IntersectionObserver((entries) => {
         if (entries[0].isIntersecting && !loading && hasMore) {
           dispatch({ type: "INCREMENT_PAGE" })
         }
       })
-  
+
       const currentLoader = loaderRef.current
       if (currentLoader) observer.observe(currentLoader)
-  
+
       return () => {
         if (currentLoader) observer.unobserve(currentLoader)
       }
     }, [loading, hasMore])
-  
+
     useEffect(() => {
       dispatch({ type: "RESET" })
       console.log("RESET")
     }, [pathname])
-  
+
     useEffect(() => {
       console.log("Fetched Articles:", articles)
     }, [articles])
-  
+
     return (
       <div className="font-serif text-gray-900">
         <section className="max-w-6xl mx-auto px-4 py-12">
@@ -98,6 +98,7 @@ export default function Articles() {
           <div className="grid md:grid-cols-3 gap-6">
             {articles.map((story) => (
               <StoryCard
+                route="article/test"
                 key={story.uuid}
                 title={story.title}
                 subtitle={story.subtitle}
@@ -105,7 +106,7 @@ export default function Articles() {
               />
             ))}
           </div>
-  
+
           <div ref={loaderRef} className="h-16 flex items-center justify-center">
             {loading && <p>Loading more...</p>}
             {!hasMore && <p>No more stories to load.</p>}
