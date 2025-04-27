@@ -1,113 +1,51 @@
 "use client"
 
-import { useEffect, useRef, useReducer } from "react"
-import HeroBanner from "@/components/heroBanner"
+import { useEffect, useState } from "react"
 import StoryCard from "@/components/storyCard"
+import LessonCard from "@/components/lessonCard"
 import { fetchArticles, Article } from "@/services/articleService"
+import { Lesson, fetchLessons } from "@/services/lessonServices"
 import { usePathname } from "next/navigation"
 
-// Types for reducer state and actions
-type State = {
-  articles: Article[]
-  page: number
-  loading: boolean
-  hasMore: boolean
-}
-
-type Action =
-  | { type: "LOAD_START" }
-  | { type: "LOAD_SUCCESS"; payload: Article[] }
-  | { type: "INCREMENT_PAGE" }
-  | { type: "RESET" }
-
-// Initial reducer state
-const initialState: State = {
-  articles: [],
-  page: 1,
-  loading: false,
-  hasMore: true,
-}
-
-// Reducer function
-function reducer(state: State, action: Action): State {
-  switch (action.type) {
-    case "LOAD_START":
-      return { ...state, loading: true }
-    case "LOAD_SUCCESS":
-      const newUniqueArticles = action.payload.filter(
-        (newArticle) => !state.articles.some((existing) => existing.uuid === newArticle.uuid)
-      )
-      return {
-        ...state,
-        articles: [...state.articles, ...newUniqueArticles],
-        loading: false,
-        hasMore: newUniqueArticles.length > 0,
-      }
-    case "INCREMENT_PAGE":
-      return { ...state, page: state.page + 1 }
-    case "RESET":
-      return initialState
-    default:
-      return state
-  }
-}
-
 export default function Home() {
-  const [state, dispatch] = useReducer(reducer, initialState)
-  const { articles, page, loading, hasMore } = state
-  const loaderRef = useRef<HTMLDivElement>(null)
+  const [articles, setArticles] = useState<Article[]>([])
+  const [lessons, setLessons] = useState<Lesson[]>([])
   const pathname = usePathname()
 
-  const loadMoreArticles = async (pageNum: number) => {
-    dispatch({ type: "LOAD_START" })
-    const newArticles = await fetchArticles(pageNum, 20)
-    dispatch({ type: "LOAD_SUCCESS", payload: newArticles })
-  }
-
   useEffect(() => {
-    loadMoreArticles(page)
-  }, [page])
-
-  useEffect(() => {
-    const observer = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting && !loading && hasMore) {
-        dispatch({ type: "INCREMENT_PAGE" })
-      }
-    })
-
-    const currentLoader = loaderRef.current
-    if (currentLoader) observer.observe(currentLoader)
-
-    return () => {
-      if (currentLoader) observer.unobserve(currentLoader)
+    const loadData = async () => {
+      const articlesData = await fetchArticles(1, 6)  // Fetch only 6 articles
+      const lessonsData = await fetchLessons()
+      setArticles(articlesData)
+      setLessons(lessonsData)
     }
-  }, [loading, hasMore])
 
-  useEffect(() => {
-    dispatch({ type: "RESET" })
-    console.log("RESET")
+    loadData()
   }, [pathname])
-
-  useEffect(() => {
-    console.log("Fetched Articles:", articles)
-  }, [articles])
-
-  const heroStory = articles[0]
 
   return (
     <div className="font-serif text-gray-900">
-      {heroStory && (
-        <HeroBanner
-          title={heroStory.title}
-          image="/article_hero.jpg"
-          description={heroStory.subtitle}
-        />
-      )}
+      <section className="text-white text-center">
+        <div className="relative h-[70vh] w-full mb-8">
+          <img src="/article_hero.jpg" alt="EduQuest Banner" className="w-full h-full object-cover absolute inset-0" />
+          <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-center px-4">
+            <div className="max-w-4xl mx-auto px-4">
+              <h1 className="text-5xl font-bold mb-6">Welcome to EduQuest!</h1>
+              <p className="text-xl mb-8">
+                Your journey to knowledge and success starts here. Explore lessons, stories, and quizzes tailored just for you.
+              </p>
+              <a href="#featured" className="inline-block bg-white text-blue-600 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-gray-100 transition">
+                Get Started
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
 
-      <section className="max-w-6xl mx-auto px-4 py-12">
+      <section id="featured" className="max-w-6xl mx-auto px-4 py-12">
         <h2 className="text-3xl font-bold mb-6">Featured Stories</h2>
         <div className="grid md:grid-cols-3 gap-6">
-          {articles.slice(1).map((story) => (
+          {articles.map((story) => (
             <StoryCard
               key={story.uuid}
               title={story.title}
@@ -116,11 +54,27 @@ export default function Home() {
             />
           ))}
         </div>
+      </section>
 
-        <div ref={loaderRef} className="h-16 flex items-center justify-center">
-          {loading && <p>Loading more...</p>}
-          {!hasMore && <p>No more stories to load.</p>}
+      <section className="max-w-6xl mx-auto px-4 py-12">
+        <h2 className="text-3xl font-bold mb-6">Check the Latest Added Lessons</h2>
+        <div className="grid md:grid-cols-3 gap-6">
+          {lessons.map((lesson) => (
+            <LessonCard
+              key={lesson.id}
+              title={lesson.title}
+              description={lesson.description}
+            />
+          ))}
         </div>
+      </section>
+
+      <section className="text-center py-16 bg-blue-50">
+        <h2 className="text-4xl font-bold mb-4">Ready to Take Exam?</h2>
+        <p className="mb-8 text-gray-600">Test your knowledge and challenge yourself today!</p>
+        <button className="px-8 py-4 bg-blue-600 text-white text-xl rounded-lg hover:bg-blue-700">
+          Go take a Quiz!
+        </button>
       </section>
     </div>
   )

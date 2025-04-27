@@ -1,66 +1,117 @@
-export default function Articles() {
-  type BlogArticleProps = {
-    title: string;
-    subtitle?: string;
-    author: string;
-    date: string;
-    content: Array<{
-      type: "paragraph";
-      text?: string;
-      image?: string;
-      caption?: string;
-    }>;
-  };
+"use client"
 
-  const articleData: BlogArticleProps = {
-    title: "Penguins in Peril: The Fight to Protect Punta Tombo",
-    subtitle: "How a protected colony in Argentina faced an unexpected massacre",
-    author: "Jane Doe",
-    date: "April 14, 2025",
-    content: [
-      {
-        type: "paragraph",
-        text: "In the sprawling Patagonian coastal reserve of Punta Tombo, home to the world’s largest colony of Magellanic penguins, conservationists faced a crisis last year..."
-      },
-      {
-        type: "paragraph",
-        text: "Punta Tombo is known for its rich biodiversity and decades-long conservation efforts..."
-      },
-      {
-        type: "paragraph",
-        text: "“We’ve seen encroachments and weak accountability,” says Maria Ruiz..."
+import { useEffect, useRef, useReducer } from "react"
+import StoryCard from "@/components/storyCard"
+import { fetchArticles, Article } from "@/services/articleService"
+import { usePathname } from "next/navigation"
+
+// Types for reducer state and actions
+type State = {
+  articles: Article[]
+  page: number
+  loading: boolean
+  hasMore: boolean
+}
+
+type Action =
+  | { type: "LOAD_START" }
+  | { type: "LOAD_SUCCESS"; payload: Article[] }
+  | { type: "INCREMENT_PAGE" }
+  | { type: "RESET" }
+
+// Initial reducer state
+const initialState: State = {
+  articles: [],
+  page: 1,
+  loading: false,
+  hasMore: true,
+}
+
+// Reducer function
+function reducer(state: State, action: Action): State {
+  switch (action.type) {
+    case "LOAD_START":
+      return { ...state, loading: true }
+    case "LOAD_SUCCESS":
+      const newUniqueArticles = action.payload.filter(
+        (newArticle) => !state.articles.some((existing) => existing.uuid === newArticle.uuid)
+      )
+      return {
+        ...state,
+        articles: [...state.articles, ...newUniqueArticles],
+        loading: false,
+        hasMore: newUniqueArticles.length > 0,
       }
-    ]
-  };
+    case "INCREMENT_PAGE":
+      return { ...state, page: state.page + 1 }
+    case "RESET":
+      return initialState
+    default:
+      return state
+  }
+}
 
-  return (
-    <div className="max-w-4xl mx-auto text-gray-800 font-serif">
-      <div className="relative w-full mb-8 px-6 pt-6">
-        <h1 className="text-4xl md:text-5xl font-bold max-w-3xl">
-          {articleData.title}
-        </h1>
-      </div>
+export default function Articles() {
+  const [state, dispatch] = useReducer(reducer, initialState)
+    const { articles, page, loading, hasMore } = state
+    const loaderRef = useRef<HTMLDivElement>(null)
+    const pathname = usePathname()
 
-      {/* Subtitle and Meta */}
-      <div className="px-6 mb-10">
-        {articleData.subtitle && (
-          <p className="text-xl italic text-gray-600 mb-2">{articleData.subtitle}</p>
-        )}
-        <div className="text-sm text-gray-500">
-          By <span className="font-semibold">{articleData.author}</span> · {articleData.date}
-        </div>
-      </div>
+    const loadMoreArticles = async (pageNum: number) => {
+      dispatch({ type: "LOAD_START" })
+      const newArticles = await fetchArticles(pageNum, 20)
+      dispatch({ type: "LOAD_SUCCESS", payload: newArticles })
+    }
 
-      {/* Article Body */}
-      <div className="prose prose-lg prose-gray px-6 pb-16">
-        {articleData.content.map((item, index) => {
-          if (item.type === "paragraph") {
-            return <p className="text-lg mb-4" key={index}>{item.text}</p>;
-          }
-          if (item)
-          return null;
-        })}
+    useEffect(() => {
+      loadMoreArticles(page)
+    }, [page])
+
+    useEffect(() => {
+      const observer = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && !loading && hasMore) {
+          dispatch({ type: "INCREMENT_PAGE" })
+        }
+      })
+
+      const currentLoader = loaderRef.current
+      if (currentLoader) observer.observe(currentLoader)
+
+      return () => {
+        if (currentLoader) observer.unobserve(currentLoader)
+      }
+    }, [loading, hasMore])
+
+    useEffect(() => {
+      dispatch({ type: "RESET" })
+      console.log("RESET")
+    }, [pathname])
+
+    useEffect(() => {
+      console.log("Fetched Articles:", articles)
+    }, [articles])
+
+    return (
+      <div className="font-serif text-gray-900">
+        <section className="max-w-6xl mx-auto px-4 py-12">
+          <h2 className="text-3xl font-bold mb-6">Latest Stories</h2>
+          <div className="grid md:grid-cols-3 gap-6">
+            {articles.map((story) => (
+              <StoryCard
+                route="article/test"
+                key={story.uuid}
+                title={story.title}
+                subtitle={story.subtitle}
+                image={story.thumbnail_image}
+              />
+            ))}
+          </div>
+
+          <div ref={loaderRef} className="h-16 flex items-center justify-center">
+            {loading && <p>Loading more...</p>}
+            {!hasMore && <p>No more stories to load.</p>}
+          </div>
+        </section>
       </div>
-    </div>
-  )
+    )
 }
