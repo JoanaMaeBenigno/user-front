@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Joana Thesis",
-  description: "Thesis by Joana Mae Benigno",
+  title: "EduQuest",
+  description: "Thesis by Joana Mae A. Benigno",
 };
 
 export default function RootLayout({

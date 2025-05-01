@@ -1,53 +1,33 @@
 "use client"
 
-import { useState } from "react"
-import { useParams, useRouter } from "next/navigation"
-
-// Define the types for the questions and answers
-type Question = {
-  id: string
-  question: string
-  choices: string[]
-  correctAnswer: string
-}
+import { useEffect, useState } from "react"
+import { useParams } from "next/navigation"
+import { fetchQuestions, Question } from "@/services/questionService"
+import { Category, fetchCategory } from "@/services/categoryService"
 
 type Answers = {
   [key: string]: string // Maps question ID to selected answer
 }
 
-type Category = {
-  name: string | string[] | undefined
-}
-
-const questions: Question[] = [
-  {
-    id: "q1",
-    question: "What is the capital of France?",
-    choices: ["Paris", "Berlin", "Rome", "Madrid"],
-    correctAnswer: "Paris",
-  },
-  {
-    id: "q2",
-    question: "Which is the largest planet?",
-    choices: ["Earth", "Venus", "Jupiter", "Mars"],
-    correctAnswer: "Jupiter",
-  },
-  {
-    id: "q3",
-    question: "What gas do plants absorb?",
-    choices: ["Oxygen", "Hydrogen", "Carbon Dioxide", "Nitrogen"],
-    correctAnswer: "Carbon Dioxide",
-  },
-]
-
-const categoryDescription = "This category tests your general knowledge on a variety of topics."
-
 export default function CategoryPage() {
-  const { id } = useParams() // Get the category id from the URL params
+  const { categoryId } = useParams() // Get the category id from the URL params
   const [answers, setAnswers] = useState<Answers>({}) // Store the selected answers
+  const [questions, setQuestions] = useState<Question[]>([])
   const [showModal, setShowModal] = useState<boolean>(false) // Track if the modal is open
   const [selectedCategory, setSelectedCategory] = useState<Category | undefined | null>(null) // Selected category details
-  const router = useRouter()
+  // const router = useRouter()
+
+  useEffect(() => {
+    const loadQuestions = async () => {
+      if (typeof categoryId === 'string') {
+        const questionData = await fetchQuestions(categoryId)
+        setQuestions(questionData)
+        const categoryData = await fetchCategory(categoryId)
+        setSelectedCategory(categoryData)
+      }
+    }
+    loadQuestions()
+  }, [])
 
   // Handle the selection of a choice for a specific question
   const handleChange = (questionId: string, selected: string) => {
@@ -56,7 +36,6 @@ export default function CategoryPage() {
 
   // Triggered when the user clicks the submit button
   const handleSubmit = () => {
-    setSelectedCategory({ name: id }) // Set the selected category based on the URL
     setShowModal(true) // Show the confirmation modal
   }
 
@@ -66,7 +45,7 @@ export default function CategoryPage() {
     setShowModal(false) // Close the modal
     alert("Answers submitted! (Check console log)") // Show a confirmation alert
     // After confirmation, navigate to the results page
-    router.push(`/checking_learning/results/${id}`)
+    // router.push(`/checking_learning/results/${categoryId}`)
   }
 
   // Handle cancellation of submission
@@ -76,26 +55,26 @@ export default function CategoryPage() {
 
   return (
     <div className="font-serif text-gray-700 max-w-4xl mx-auto px-4 py-12">
-      <h1 className="text-3xl font-bold mb-4 text-center">Category: {id}</h1>
-      <p className="text-center mb-8 text-gray-600">{categoryDescription}</p>
+      <h1 className="text-3xl font-bold mb-4 text-center">{selectedCategory?.name}</h1>
+      <p className="text-center mb-8 text-gray-600">{selectedCategory?.description}</p>
 
       <form onSubmit={(e) => { e.preventDefault(); handleSubmit() }}>
         <div className="space-y-8">
           {questions.map((q) => (
             <div key={q.id} className="border p-6 rounded-xl shadow bg-white">
-              <h2 className="text-xl font-semibold mb-4">{q.question}</h2>
+              <h2 className="text-xl font-semibold mb-4">{q.question_text}</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {q.choices.map((choice) => (
-                  <label key={choice} className="flex items-center space-x-2">
+                  <label key={choice.id} className="flex items-center space-x-2">
                     <input
                       type="radio"
                       name={q.id}
-                      value={choice}
-                      checked={answers[q.id] === choice}
-                      onChange={() => handleChange(q.id, choice)}
+                      value={choice.id}
+                      checked={answers[q.id] === choice.id}
+                      onChange={() => handleChange(q.id, choice.id)}
                       className="h-4 w-4 text-blue-600 focus:ring-blue-500"
                     />
-                    <span>{choice}</span>
+                    <span>{choice.answer_text}</span>
                   </label>
                 ))}
               </div>

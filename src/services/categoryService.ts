@@ -5,45 +5,22 @@ export type Category = {
   passRate: number // percentage of students who passed
 }
 
-// Dummy Categories
-const dummyCategories: Category[] = [
-  {
-    id: "cat-1",
-    name: "Biology",
-    description: "Study of living organisms and ecosystems.",
-    passRate: 78,
-  },
-  {
-    id: "cat-2",
-    name: "Chemistry",
-    description: "Understanding matter and chemical reactions.",
-    passRate: 82,
-  },
-  {
-    id: "cat-3",
-    name: "Physics",
-    description: "Explore forces, energy, and the universe.",
-    passRate: 75,
-  },
-  {
-    id: "cat-4",
-    name: "History",
-    description: "Events and people that shaped our world.",
-    passRate: 88,
-  },
-  {
-    id: "cat-5",
-    name: "Mathematics",
-    description: "Numbers, equations, and problem-solving skills.",
-    passRate: 70,
-  },
-]
-
-// Simulate API call
 export async function fetchCategories(): Promise<Category[]> {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(dummyCategories)
-    }, 500)
-  })
+  const API_URL = process.env.NEXT_PUBLIC_API_URL
+
+  const res = await fetch(`${API_URL}/check_learning/category`)
+  if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
+  const json = await res.json()
+
+  return json.data || []
+}
+
+export async function fetchCategory(category_id: string): Promise<Category> {
+  const API_URL = process.env.NEXT_PUBLIC_API_URL
+
+  const res = await fetch(`${API_URL}/check_learning/category/${category_id}`)
+  if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
+  const json = await res.json()
+
+  return json.data || {}
 }
