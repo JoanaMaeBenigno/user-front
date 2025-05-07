@@ -98,7 +98,7 @@ export default function Articles() {
           <div className="grid md:grid-cols-3 gap-6">
             {articles.map((story) => (
               <StoryCard
-                route="article/test"
+                route={`article/${story.uuid}`}
                 key={story.uuid}
                 title={story.title}
                 subtitle={story.subtitle}

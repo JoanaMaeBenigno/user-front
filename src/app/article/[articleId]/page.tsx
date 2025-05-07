@@ -1,37 +1,43 @@
-export default function Article() {
-  type BlogArticleProps = {
-    title: string;
-    subtitle?: string;
-    author: string;
-    date: string;
-    content: Array<{
-      type: "paragraph";
-      text?: string;
-      image?: string;
-      caption?: string;
-    }>;
-  };
+"use client"
 
-  const articleData: BlogArticleProps = {
-    title: "Penguins in Peril: The Fight to Protect Punta Tombo",
-    subtitle: "How a protected colony in Argentina faced an unexpected massacre",
-    author: "Jane Doe",
-    date: "April 14, 2025",
-    content: [
-      {
-        type: "paragraph",
-        text: "In the sprawling Patagonian coastal reserve of Punta Tombo, home to the world’s largest colony of Magellanic penguins, conservationists faced a crisis last year..."
-      },
-      {
-        type: "paragraph",
-        text: "Punta Tombo is known for its rich biodiversity and decades-long conservation efforts..."
-      },
-      {
-        type: "paragraph",
-        text: "“We’ve seen encroachments and weak accountability,” says Maria Ruiz..."
-      }
-    ]
-  };
+import React, { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { BlogArticleProps, fetchArticle } from "@/services/articleService";
+
+export default function Article() {
+  const router = useRouter()
+
+  const { articleId } = useParams<{ articleId: string }>();
+
+  const [articleData, setArticleData] = useState<BlogArticleProps | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!articleId || typeof articleId !== "string") return;
+
+    fetchArticle(articleId)
+      .then((data) => {
+        const newData: BlogArticleProps = {
+          title: data.title,
+          subtitle: data.subtitle,
+          posted_date: data.posted_date,
+          content: JSON.parse(data.content),
+          author: data.author
+        }
+        console.log(newData.content)
+        setArticleData(newData);
+        setIsLoading(false);
+      })
+      .catch(() => {
+        setError("Failed to load article.");
+        setIsLoading(false);
+      });
+  }, [articleId]);
+
+  if (isLoading) return <p className="px-6 py-10">Loading...</p>;
+  if (error) return <p className="px-6 py-10 text-red-500">{error}</p>;
+  if (!articleData) return <p className="px-6 py-10">No article found.</p>;
 
   return (
     <div className="max-w-4xl mx-auto text-gray-800 font-serif">
@@ -47,19 +53,36 @@ export default function Article() {
           <p className="text-xl italic text-gray-600 mb-2">{articleData.subtitle}</p>
         )}
         <div className="text-sm text-gray-500">
-          By <span className="font-semibold">{articleData.author}</span> · {articleData.date}
+          By <span className="font-semibold">{articleData.author}</span> · {articleData.posted_date}
         </div>
       </div>
 
       {/* Article Body */}
-      <div className="prose prose-lg prose-gray px-6 pb-16">
+      <div className="prose prose-lg prose-gray px-6">
         {articleData.content.map((item, index) => {
           if (item.type === "paragraph") {
-            return <p className="text-lg mb-4" key={index}>{item.text}</p>;
+            return (
+              <p className="text-lg mb-4" key={index}>
+                {item.content.split('\n').map((line, i) => (
+                  <React.Fragment key={i}>
+                    {line}
+                    <br />
+                  </React.Fragment>
+                ))}
+              </p>
+            );
           }
-          if (item)
           return null;
         })}
+      </div>
+
+      <div className="px-6 py-4">
+        <button
+          onClick={() => router.push('/article')}
+          className="text-blue-500 hover:text-blue-700 font-medium underline bg-transparent border-none cursor-pointer"
+        >
+          Back to the Article Collection
+        </button>
       </div>
     </div>
   )

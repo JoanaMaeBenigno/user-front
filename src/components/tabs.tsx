@@ -102,7 +102,7 @@ export default function Tabs() {
             <button
               key={tab.endpoint}
               onClick={() => goToEndpoint(tab.endpoint)}
-              className={`px-4 py-2 font-semibold text-gray-600 border-b-2 border-transparent hover:text-blue-500 hover:border-blue-500 transition`}
+              className={`px-4 py-2 font-semibold text-gray-600 border-b-2 border-transparent hover:text-blue-500 hover:border-blue-500 transition cursor-pointer`}
             >
               {tab.name}
             </button>
