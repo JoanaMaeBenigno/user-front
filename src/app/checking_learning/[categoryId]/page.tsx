@@ -57,21 +57,21 @@ export default function CategoryPage() {
     <div className="font-serif text-gray-700 max-w-4xl mx-auto px-4 py-12">
       <h1 className="text-3xl font-bold mb-4 text-center">{selectedCategory?.name}</h1>
       <p className="text-center mb-8 text-gray-600">{selectedCategory?.description}</p>
-
       <form onSubmit={(e) => { e.preventDefault(); handleSubmit() }}>
         <div className="space-y-8">
-          {questions.map((q) => (
-            <div key={q.id} className="border p-6 rounded-xl shadow bg-white">
-              <h2 className="text-xl font-semibold mb-4">{q.question_text}</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {q.choices.map((choice) => (
-                  <label key={choice.id} className="flex items-center space-x-2">
+          {questions.map((question, index) => (
+            <div key={question.id}>
+              <h2 className="text-xl font-semibold mb-2">Question #{index + 1}</h2>
+              <div className="mb-2">{question.question_text}</div>
+              <div className="ml-4">
+                {question.choices.map((choice) => (
+                  <label key={choice.id} className="flex items-center space-x-2 mb-1">
                     <input
                       type="radio"
-                      name={q.id}
+                      name={question.id}
                       value={choice.id}
-                      checked={answers[q.id] === choice.id}
-                      onChange={() => handleChange(q.id, choice.id)}
+                      checked={answers[question.id] === choice.id}
+                      onChange={() => handleChange(question.id, choice.id)}
                       className="h-4 w-4 text-blue-600 focus:ring-blue-500"
                     />
                     <span>{choice.answer_text}</span>

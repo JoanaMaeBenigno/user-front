@@ -15,6 +15,7 @@ export async function fetchQuestions(category_id: string): Promise<Question[]> {
   const res = await fetch(`${API_URL}/check_learning/question/${category_id}`)
   if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
   const json = await res.json()
+  console.log(json)
 
   return json.data || []
 }
