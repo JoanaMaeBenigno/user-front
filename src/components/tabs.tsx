@@ -34,6 +34,10 @@ export default function Tabs() {
       endpoint: 'checking_learning'
     },
     {
+      name: 'Quick Check',
+      endpoint: 'quick_check'
+    },
+    {
       name: 'Worksheets',
       endpoint: 'worksheet'
     }

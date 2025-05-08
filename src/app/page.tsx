@@ -5,12 +5,13 @@ import StoryCard from "@/components/storyCard"
 import LessonCard from "@/components/lessonCard"
 import { fetchArticles, Article } from "@/services/articleService"
 import { Lesson, fetchLessons } from "@/services/lessonServices"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 
 export default function Home() {
   const [articles, setArticles] = useState<Article[]>([])
   const [lessons, setLessons] = useState<Lesson[]>([])
   const pathname = usePathname()
+  const router = useRouter()
 
   useEffect(() => {
     const loadData = async () => {
@@ -73,7 +74,10 @@ export default function Home() {
       <section className="text-center py-16 bg-blue-50">
         <h2 className="text-4xl font-bold mb-4">Ready to Take Exam?</h2>
         <p className="mb-8 text-gray-600">Test your knowledge and challenge yourself today!</p>
-        <button className="px-8 py-4 bg-blue-600 text-white text-xl rounded-lg hover:bg-blue-700">
+        <button
+          onClick={() => router.push('/checking_learning')}
+          className="px-8 py-4 bg-blue-600 text-white text-xl rounded-lg hover:bg-blue-700 cursor-pointer"
+        >
           Go take a Quiz!
         </button>
       </section>

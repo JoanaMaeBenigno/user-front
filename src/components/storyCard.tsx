@@ -19,7 +19,7 @@ export default function StoryCard({ title, subtitle, image, route }: StoryCardPr
   return (
     <div
       onClick={handleCardClick}
-      className="bg-white shadow-md rounded-lg overflow-hidden cursor-pointer"
+      className="bg-white shadow-md rounded-lg overflow-hidden cursor-pointer transition-transform transition-shadow duration-300 hover:-translate-y-1 hover:shadow-lg hover:bg-gray-50"
     >
       <img src={image} alt={title} className="w-full h-48 object-cover" />
       <div className="p-4">
