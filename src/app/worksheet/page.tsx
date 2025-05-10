@@ -54,6 +54,7 @@ export default function WorksheetsPage() {
             description={worksheet.description}
             fileUrl={worksheet.file_url}
             date={transformDate(worksheet.created_date)}
+            icon="/worksheet.svg"
             onDownload={handleDownload}
           />
         ))}

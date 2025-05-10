@@ -6,6 +6,7 @@ type Props = {
   description: string
   fileUrl: string
   date: string
+  icon: string
   onDownload: (url: string) => void
 }
 
@@ -15,6 +16,7 @@ export default function FileCard({
   description,
   fileUrl,
   date,
+  icon,
   onDownload
 }: Props) {
   return (
@@ -23,7 +25,7 @@ export default function FileCard({
       className="flex w-full max-w-xl mx-auto bg-white rounded-2xl shadow-md overflow-hidden"
     >
       <div className="w-1/3 bg-gray-100 flex items-center justify-center p-4">
-        <img src="/lesson.svg" alt="Lesson Logo" className="w-16 h-16 object-contain" />
+        <img src={icon} alt="Lesson Logo" className="w-16 h-16 object-contain" />
       </div>
       <div className="w-2/3 p-4 flex flex-col justify-between">
         <div>

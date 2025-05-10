@@ -53,6 +53,7 @@ export default function LessonsPage() {
             title={lesson.title}
             description={lesson.description}
             fileUrl={lesson.file_url}
+            icon="/lesson.svg"
             date={transformDate(lesson.created_date)}
             onDownload={handleDownload}
           />
