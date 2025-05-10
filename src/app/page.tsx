@@ -2,14 +2,14 @@
 
 import { useEffect, useState } from "react"
 import StoryCard from "@/components/storyCard"
-import LessonCard from "@/components/lessonCard"
 import { fetchArticles, Article } from "@/services/articleService"
-import { Lesson, fetchLessons } from "@/services/lessonServices"
+import { File, fetchLessons } from "@/services/fileService"
 import { usePathname, useRouter } from "next/navigation"
+import FileCard from "@/components/fileCard"
 
 export default function Home() {
   const [articles, setArticles] = useState<Article[]>([])
-  const [lessons, setLessons] = useState<Lesson[]>([])
+  const [lessons, setLessons] = useState<File[]>([])
   const pathname = usePathname()
   const router = useRouter()
 
@@ -23,6 +23,25 @@ export default function Home() {
 
     loadData()
   }, [pathname])
+
+  const transformDate = (stringDate: string): string => {
+    const date = new Date(stringDate)
+    const options: Intl.DateTimeFormatOptions = {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+      timeZone: 'Asia/Manila',
+    }
+
+    return new Intl.DateTimeFormat("en-US", options).format(date)
+  }
+
+  const handleDownload = (fileUrl: string) => {
+    window.open(fileUrl, "_blank")
+  }
 
   return (
     <div className="font-serif text-gray-900">
@@ -60,12 +79,16 @@ export default function Home() {
 
       <section className="max-w-6xl mx-auto px-4 py-12">
         <h2 className="text-3xl font-bold mb-6">Check the Latest Added Lessons</h2>
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-2 gap-6">
           {lessons.map((lesson) => (
-            <LessonCard
+            <FileCard
               key={lesson.id}
+              id={lesson.id}
               title={lesson.title}
               description={lesson.description}
+              fileUrl={lesson.file_url}
+              date={transformDate(lesson.created_date)}
+              onDownload={handleDownload}
             />
           ))}
         </div>
