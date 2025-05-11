@@ -1,9 +1,10 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useParams } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import { fetchQuestions, Question } from "@/services/questionService"
 import { Category, fetchCategory } from "@/services/categoryService"
+import { postQuestionAnswer } from "@/services/questionResultService"
 
 type Answers = {
   [key: string]: string // Maps question ID to selected answer
@@ -15,7 +16,13 @@ export default function CategoryPage() {
   const [questions, setQuestions] = useState<Question[]>([])
   const [showModal, setShowModal] = useState<boolean>(false) // Track if the modal is open
   const [selectedCategory, setSelectedCategory] = useState<Category | undefined | null>(null) // Selected category details
-  // const router = useRouter()
+  const router = useRouter()
+
+  const [modalSuccessOpen, setModalSuccessOpen] = useState(false);
+  const [modalMessage, setModalMessage] = useState('');
+  const [modalSuccess, setModalSuccess] = useState(false);
+
+  const returnPoint = `checking_learning/${categoryId}`
 
   useEffect(() => {
     const loadQuestions = async () => {
@@ -35,17 +42,29 @@ export default function CategoryPage() {
   }
 
   // Triggered when the user clicks the submit button
-  const handleSubmit = () => {
+  const handleConfirm = () => {
     setShowModal(true) // Show the confirmation modal
   }
 
   // Handle confirmation after submitting the quiz
-  const handleConfirm = () => {
-    console.log("Submitted Answers:", answers) // Log the answers (for now)
-    setShowModal(false) // Close the modal
-    alert("Answers submitted! (Check console log)") // Show a confirmation alert
-    // After confirmation, navigate to the results page
-    // router.push(`/checking_learning/results/${categoryId}`)
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      const payload = {
+        'category_id': categoryId,
+        'answers': answers
+      }
+
+      const response = await postQuestionAnswer(JSON.stringify(payload));
+
+      router.push(`/checking_learning/results/${response.id}`)
+    } catch (err) {
+      console.error(err);
+      setModalSuccessOpen(true)
+      setModalMessage("Oops. We encountered a problem. Please try again later.");
+      setModalSuccess(false);
+    }
   }
 
   // Handle cancellation of submission
@@ -57,7 +76,7 @@ export default function CategoryPage() {
     <div className="font-serif text-gray-700 max-w-4xl mx-auto px-4 py-12">
       <h1 className="text-3xl font-bold mb-4 text-center">{selectedCategory?.name}</h1>
       <p className="text-center mb-8 text-gray-600">{selectedCategory?.description}</p>
-      <form onSubmit={(e) => { e.preventDefault(); handleSubmit() }}>
+      <form onSubmit={(e) => { e.preventDefault(); handleConfirm() }}>
         <div className="space-y-8">
           {questions.map((question, index) => (
             <div key={question.id}>
@@ -99,7 +118,7 @@ export default function CategoryPage() {
             <h2 className="text-2xl font-bold mb-4">Submit your quiz?</h2>
             <div className="flex justify-center gap-4">
               <button
-                onClick={handleConfirm}
+                onClick={handleSubmit}
                 className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
               >
                 Yes
@@ -111,6 +130,25 @@ export default function CategoryPage() {
                 Cancel
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {modalSuccessOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-sm w-full shadow-lg text-center space-y-4">
+            <h2 className={`text-xl font-semibold ${modalSuccess ? 'text-green-600' : 'text-red-600'}`}>
+              {modalSuccess ? 'Success' : 'Error'}
+            </h2>
+            <p>{modalMessage}</p>
+            <button
+              onClick={() => {
+                if (modalSuccess) router.push(returnPoint);
+              }}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+            >
+              OK
+            </button>
           </div>
         </div>
       )}

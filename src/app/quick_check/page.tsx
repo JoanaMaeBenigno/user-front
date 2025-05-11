@@ -51,7 +51,6 @@ export default function QuickCheckPage() {
             <div className="p-4">
               <h3 className="text-lg font-bold text-gray-900">{cat.name}</h3>
               <p className="text-sm text-gray-600 mb-2">{cat.description}</p>
-              <span className="text-xs text-gray-400">{cat.passRate}% passed</span>
             </div>
           </div>
         ))}
