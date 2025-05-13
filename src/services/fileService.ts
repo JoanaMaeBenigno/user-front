@@ -25,3 +25,13 @@ export async function fetchLessons(): Promise<File[]> {
 
   return json.data || []
 }
+
+export async function fetchVideos(): Promise<File[]> {
+  const API_URL = process.env.NEXT_PUBLIC_API_URL
+
+  const res = await fetch(`${API_URL}/file/video`)
+  if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
+  const json = await res.json()
+
+  return json.data || []
+}

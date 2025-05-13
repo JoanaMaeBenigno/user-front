@@ -1,23 +1,37 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { fetchLessons, File } from "@/services/fileService" // adjust the import path as needed
+import { fetchLessons, fetchVideos, File } from "@/services/fileService" // adjust the import path as needed
 import FileCard from "@/components/fileCard"
+import YouTubeEmbed from "@/components/youtubeEmbed"
 
 export default function LessonsPage() {
   const [lessons, setLessons] = useState<File[]>([])
+  const [videos, setVideos] = useState<File[]>([])
 
   useEffect(() => {
     const load = async () => {
       try {
-        const data = await fetchLessons() // replace with dynamic id if needed
-        setLessons(data)
+        const lessonResponse = await fetchLessons() // replace with dynamic id if needed
+        setLessons(lessonResponse)
+
+        const videoResponse = await fetchVideos() // replace with dynamic id if needed
+        setVideos(videoResponse)
       } catch (error) {
         console.error("Failed to fetch lessons", error)
       }
     }
     load()
   }, [])
+
+  function getYouTubeVideoId(url: string): string {
+    const urlObj = new URL(url);
+    const youtubeId: string | null = urlObj.searchParams.get("v");
+    if (youtubeId == null) {
+      return ''
+    }
+    return youtubeId
+  }
 
   const transformDate = (stringDate: string): string => {
     const date = new Date(stringDate)
@@ -45,7 +59,7 @@ export default function LessonsPage() {
         download this lesson
       </p>
 
-      <div className="space-y-6">
+      <div className="space-y-6 mb-10">
         {lessons.map((lesson) => (
           <FileCard
             key={lesson.id}
@@ -57,6 +71,13 @@ export default function LessonsPage() {
             date={transformDate(lesson.created_date)}
             onDownload={handleDownload}
           />
+        ))}
+      </div>
+
+      <h2 className="text-2xl font-bold mb-2 text-center">Videos</h2>
+      <div className="space-y-6">
+        {videos.map((video) => (
+          <YouTubeEmbed key={video.id} youtubeId={getYouTubeVideoId(video.file_url)} />
         ))}
       </div>
     </div>
