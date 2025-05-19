@@ -42,7 +42,7 @@ export default function WorksheetsPage() {
     <div className="font-serif text-gray-700 max-w-6xl mx-auto px-4 py-12">
       <h1 className="text-3xl font-bold mb-2 text-center">Worksheet</h1>
       <p className="text-center text-gray-700 mb-8">
-        pwede gamitin ng teachers sa teaching and learning process for enhancement and reinforcement ng awareness to socioscientific issues
+        Equip your students to navigate today’s most pressing issues with our downloadable worksheets—designed for educators to spark discussion, deepen understanding, and build informed perspectives on real‑world scientific and social challenges.
       </p>
 
       <div className="space-y-6">
