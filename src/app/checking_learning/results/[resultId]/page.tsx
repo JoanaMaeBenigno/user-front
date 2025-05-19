@@ -4,10 +4,58 @@ import { useState, useEffect } from "react"
 import { useRouter, useParams } from "next/navigation"
 import { fetchQuestionResults, QuestionResult } from "@/services/questionResultService"
 
+type Message = {
+  description: string
+  text: string
+  className: string
+}
+
 export default function ResultsPage() {
   const [result, setResult] = useState<QuestionResult | null>(null)
+  const [message, setMessage] = useState<Message>({
+    description: '',
+    text: '',
+    className: ''
+  })
   const router = useRouter()
   const { resultId } = useParams()
+
+  const getMessage = (percentage: number): Message => {
+    if (percentage >= 90) {
+      return {
+        description: "Outstanding",
+        text: "your brain is in beast mode!",
+        className: 'from-green-500 via-green-600 to-green-700'
+      }
+    }
+    if (percentage >= 70) {
+      return {
+        description: "Very Satisfactory",
+        text: "so close to genius status!",
+        className: 'from-blue-500 via-blue-600 to-blue-700'
+      }
+    }
+    if (percentage >= 50) {
+      return {
+        description: "Satisfactory",
+        text: "not bad, but let's level up!",
+        className: 'from-yellow-500 via-yellow-600 to-yellow-700'
+      }
+    }
+    if (percentage >= 30) {
+      return {
+        description: "Fairly Satisfactory",
+        text: "you've got the spark; now ignite it!",
+        className: 'from-orange-500 via-orange-600 to-orange-700'
+      }
+    }
+
+    return {
+      description: "Did not meet the expectation",
+      text: "time to hit the books!",
+      className: 'from-red-500 via-red-600 to-red-700'
+    }
+  }
 
   useEffect(() => {
     const loadResult =  async () => {
@@ -26,6 +74,7 @@ export default function ResultsPage() {
         };
         response.created_date = new Date(response.created_date).toLocaleString('en-US', options);
         setResult(response)
+        setMessage(getMessage(Number(response.percentage)))
       }
     }
     loadResult()
@@ -43,8 +92,8 @@ export default function ResultsPage() {
           <span className="font-bold text-blue-600">{result.question_count}</span> correct!
         </p>
 
-        <p className="text-lg text-gray-600 mb-4">
-          Your percentage is <span className="font-bold text-blue-600">{result.percentage}%</span>.
+        <p className={`text-lg mb-4 font-semibold bg-clip-text text-transparent bg-gradient-to-r ${message.className}`}>
+          <b>{message.description}</b> — {message.text}
         </p>
 
         <p className="text-lg text-gray-600 mb-6">
