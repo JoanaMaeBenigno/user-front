@@ -56,7 +56,7 @@ export default function LessonsPage() {
     <div className="font-serif text-gray-700 max-w-6xl mx-auto px-4 py-12">
       <h1 className="text-3xl font-bold mb-2 text-center">Lessons</h1>
       <p className="text-center text-gray-700 mb-8">
-        download this lesson
+        Browse our curated library of lessons—each one carefully crafted to guide you step by step through key concepts.
       </p>
 
       <div className="space-y-6 mb-10">
