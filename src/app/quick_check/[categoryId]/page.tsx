@@ -65,6 +65,20 @@ export default function CategoryPage() {
     }
   }
 
+  const getTextValue = (choiceId: number) => {
+    if (choiceId === 1) {
+      return 'Very Unaware'
+    }
+    else if (choiceId === 2) {
+      return 'Unaware'
+    }
+    else if (choiceId === 3) {
+      return 'Aware'
+    }
+
+    return 'Fully Aware'
+  }
+
   // Handle cancellation of submission
   const handleCancel = () => {
     setShowModal(false) // Close the modal without submitting
@@ -82,7 +96,7 @@ export default function CategoryPage() {
               <div className="mb-2">{question.question_text}</div>
               <div className="ml-4">
                 {Array.from({ length: 4 }).map((_, choiceIndex) => {
-                  const choiceId = choiceIndex + 1; // Choice 1, 2, 3, 4
+                  const choiceId = choiceIndex + 1;
                   return (
                     <label key={choiceId} className="flex items-center space-x-2 mb-1">
                       <input
@@ -93,7 +107,7 @@ export default function CategoryPage() {
                         onChange={() => handleChange(question.id, choiceId)}
                         className="h-4 w-4 text-blue-600 focus:ring-blue-500"
                       />
-                      <span>{choiceId}</span>
+                      <span>{choiceId} - {getTextValue(choiceId)}</span>
                     </label>
                   );
                 })}
